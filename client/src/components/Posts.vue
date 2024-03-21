@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import { Icon } from '@iconify/vue';
 
 const posts = ref([]);
 
@@ -50,7 +51,7 @@ async function updatePost() {
 
   const index = posts.value.findIndex((post) => post.id === data.id);
   posts.value[index] = data;
-  
+
   category.value = "";
   body.value = "";
   post_id.value = "";
@@ -87,7 +88,15 @@ async function editPost(id) {
   <div
     class="m-4 rounded-md border-2 border-gray-300 p-4 sm:container sm:mx-auto"
   >
-    <h1 class="text-center text-2xl font-bold">Posts</h1>
+
+    <!-- title -->
+    <div class="flex justify-center items-center space-x-2">
+      <h1 class="text-center text-2xl font-bold">Posts</h1>
+      <Icon icon="mdi-light:home" />
+      <Icon icon="ic:baseline-house" />
+    </div>
+
+    <!-- input bar -->
     <div class="flex flex-col sm:flex-row">
       <input
         type="text"
@@ -102,6 +111,8 @@ async function editPost(id) {
         v-model="body"
       />
     </div>
+
+    <!-- buttons -->
     <div class="justify-center flex">
       <button
         v-if="isEditing"
@@ -127,11 +138,12 @@ async function editPost(id) {
       </button>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 ">
+    <!-- posts -->
+    <div class="grid grid-cols-1 gap-1  sm:grid-cols-2 xl:grid-cols-3 ">
       <div
         v-for="post in posts"
         :key="post.id"
-        class="m-4 rounded-md border-2 border-gray-300 p-4 flex"
+        class="rounded-md border-2 border-gray-300 p-2 flex"
       >
         <div class="flex-1">
           <p class="text-xs"
@@ -145,17 +157,20 @@ async function editPost(id) {
             class="m-2 p-1  rounded-md bg-blue-500 text-white"
             @click="editPost(post.id)"
           >
-            Edit
+            <icon icon="mdi-light:pencil" />
           </button>
           <button
             class="m-2 p-1 rounded-md bg-red-500 text-white"
             @click="deletePost(post.id)"
           >
-            Delete
+            <icon icon="ic:baseline-delete-forever" />
           </button>
         </div>
       </div>
     </div>
+
+
+
   </div>
 </template>
 
