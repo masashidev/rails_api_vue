@@ -4,12 +4,14 @@ import { Icon } from '@iconify/vue';
 
 const posts = ref([]);
 
-const category = ref("");
+const selectedCategory = ref("");
 const body = ref("");
 const post_id = ref("");
 const isEditing = ref(false);
 const API_URL = "http://localhost:3000/posts";
+const CATEGORIES_URL = "http://localhost:3000/categories";
 
+const newCategoryName = ref('');
 
 
 
@@ -18,26 +20,42 @@ const API_URL = "http://localhost:3000/posts";
 const categories = ref([]);
 
 onMounted(async () => {
-  await fetchCategories();
-  const res = await fetch(API_URL);
-  posts.value = await res.json();
+  try {
+    const res = await fetch(CATEGORIES_URL);
+    categories.value = await res.json();
+    console.log('Fetched categories:', categories.value)
+  } catch (error) {
+    console.error('Failed to fetch categories:', error)
+  }
 });
 
-async function fetchCategories() {
-  const categoriesUrl = 'http://localhost:3000/categories'; // Adjust the URL to your categories endpoint
-  const res = await fetch(categoriesUrl);
-  categories.value = await res.json();
+async function createCategory() {
+  try {
+    const response = await fetch(CATEGORIES_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newCategoryName.value }),
+    });
+    const data = await response.json();
+    categories.value.push(data); // Add the new category to the categories list
+    newCategoryName.value = ''; // Reset the input field
+  } catch (error) {
+    console.error('Failed to create category:', error);
+  }
 }
-
-
 
 
 
 
 // posts logic
 onMounted(async () => {
-  const res = await fetch(API_URL);
-  posts.value = await res.json();
+  try{
+    const res = await fetch(API_URL);
+    posts.value = await res.json();
+    console.log('Fetched posts:', posts.value)
+  } catch (error) {
+    console.error('Failed to fetch posts:', error)
+  }
 });
 
 async function createPost() {
@@ -47,14 +65,14 @@ async function createPost() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      category_id: category.value,
+      category_id: selectedCategory.value,
       body: body.value,
     }),
   });
 
   const data = await res.json();
   posts.value.push(data);
-  category.value = "";
+  selectedCategory.value = "";
   body.value = "";
   post_id.value = "";
 }
@@ -66,7 +84,7 @@ async function updatePost() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      category_id: category.value,
+      category_id: selectedCategory.value,
       body: body.value,
       id: post_id.value,
     }),
@@ -77,18 +95,13 @@ async function updatePost() {
   const index = posts.value.findIndex((post) => post.id === data.id);
   posts.value[index] = data;
 
-  category.value = "";
+  selectedCategory.value = "";
   body.value = "";
   post_id.value = "";
   isEditing.value = false;
 }
 
-function cancelEdit() {
-  category.value = "";
-  body.value = "";
-  post_id.value = "";
-  isEditing.value = false;
-}
+
 
 async function deletePost(id) {
   await fetch(`${API_URL}/${id}`, {
@@ -100,12 +113,19 @@ async function deletePost(id) {
 async function editPost(id) {
   const post = posts.value.find((post) => post.id === id );
 
-  category.value = post.category;
+  selectedCategory.value = post.category;
   body.value = post.body;
   post_id.value = post.id;
   isEditing.value = true;
 
   window.scrollTo({ top: 0, behavior: "smooth"});
+}
+
+function cancelEdit() {
+  selectedCategory.value = "";
+  body.value = "";
+  post_id.value = "";
+  isEditing.value = false;
 }
 
 </script>
@@ -125,9 +145,15 @@ async function editPost(id) {
     <!-- title -->
     <div class="flex justify-center items-center space-x-2">
       <h1 class="text-center text-2xl font-bold">Posts</h1>
-      <Icon icon="mdi-light:home" />
-      <Icon icon="ic:baseline-house" />
+      <Icon icon="mdi-light:home" width="32" height="32" />
+      <Icon icon="ic:baseline-house" color="blue"/>
     </div>
+
+    <div>
+      <input type="text" v-model="newCategoryName" placeholder="New Category Name" />
+      <button @click="createCategory">Add Category</button>
+    </div>
+
 
 
 
@@ -136,7 +162,7 @@ async function editPost(id) {
       <!-- options for selecting categories -->
       <select
         class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2"
-        v-model="category"
+        v-model="selectedCategory"
       >
         <option value="" disabled selected>Select a category</option>
         <option
@@ -146,7 +172,7 @@ async function editPost(id) {
           >{{ cat.name }}
         </option>
       </select>
-      {{ category }}
+      {{ selectedCategory }}
       <input
         type="text"
         class="mx-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2"
@@ -194,9 +220,10 @@ async function editPost(id) {
       >
         <div class="flex-1">
           <p class="text-xs"
-          >{{ post.id }}) {{ post.category_id }}</p>
+          >{{ post.id }}) {{ post.category.name }}</p>
           <h3 class="text-lg"
           >{{ post.body }}</h3>
+          <p>{{ post.created_at.toString().slice(0, 10) }}</p>
         </div>
 
         <div class="flex justify-end">

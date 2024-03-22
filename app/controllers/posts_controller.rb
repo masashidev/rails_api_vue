@@ -3,9 +3,13 @@ class PostsController < ApplicationController
 
   # GET /posts
   def index
-    @posts = Post.all
+    if params[:category_id]
+      @posts = Post.includes(:category).where(category_id: params[:category_id])
+    else
+      @posts = Post.includes(:category).all
+    end
 
-    render json: @posts
+    render json: @posts, include: :category
   end
 
   # GET /posts/1
