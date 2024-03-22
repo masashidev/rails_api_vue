@@ -10,6 +10,31 @@ const post_id = ref("");
 const isEditing = ref(false);
 const API_URL = "http://localhost:3000/posts";
 
+
+
+
+
+// categories logic
+const categories = ref([]);
+
+onMounted(async () => {
+  await fetchCategories();
+  const res = await fetch(API_URL);
+  posts.value = await res.json();
+});
+
+async function fetchCategories() {
+  const categoriesUrl = 'http://localhost:3000/categories'; // Adjust the URL to your categories endpoint
+  const res = await fetch(categoriesUrl);
+  categories.value = await res.json();
+}
+
+
+
+
+
+
+// posts logic
 onMounted(async () => {
   const res = await fetch(API_URL);
   posts.value = await res.json();
@@ -22,7 +47,7 @@ async function createPost() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      category: category.value,
+      category_id: category.value,
       body: body.value,
     }),
   });
@@ -41,7 +66,7 @@ async function updatePost() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      category: category.value,
+      category_id: category.value,
       body: body.value,
       id: post_id.value,
     }),
@@ -57,6 +82,7 @@ async function updatePost() {
   post_id.value = "";
   isEditing.value = false;
 }
+
 function cancelEdit() {
   category.value = "";
   body.value = "";
@@ -84,6 +110,13 @@ async function editPost(id) {
 
 </script>
 
+
+
+
+
+
+
+
 <template>
   <div
     class="m-4 rounded-md border-2 border-gray-300 p-4 sm:container sm:mx-auto"
@@ -96,21 +129,33 @@ async function editPost(id) {
       <Icon icon="ic:baseline-house" />
     </div>
 
+
+
     <!-- input bar -->
-    <div class="flex flex-col sm:flex-row">
-      <input
-        type="text"
+    <div class="flex flex-col sm:flex-row space-y-4">
+      <!-- options for selecting categories -->
+      <select
         class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2"
-        placeholder="Category"
         v-model="category"
-      />
+      >
+        <option value="" disabled selected>Select a category</option>
+        <option
+          v-for="cat in categories"
+          :key="cat.id"
+          :value="cat.id"
+          >{{ cat.name }}
+        </option>
+      </select>
+      {{ category }}
       <input
         type="text"
-        class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2"
+        class="mx-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2"
         placeholder="Body"
         v-model="body"
       />
     </div>
+
+
 
     <!-- buttons -->
     <div class="justify-center flex">
@@ -138,6 +183,8 @@ async function editPost(id) {
       </button>
     </div>
 
+
+
     <!-- posts -->
     <div class="grid grid-cols-1 gap-1  sm:grid-cols-2 xl:grid-cols-3 ">
       <div
@@ -147,7 +194,7 @@ async function editPost(id) {
       >
         <div class="flex-1">
           <p class="text-xs"
-          >{{ post.id }}) {{ post.category }}</p>
+          >{{ post.id }}) {{ post.category_id }}</p>
           <h3 class="text-lg"
           >{{ post.body }}</h3>
         </div>
