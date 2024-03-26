@@ -8,6 +8,10 @@ import Posts from './components/Posts.vue';
   </div>
 </template>
 
-<style scoped>
-
+<style>
+  .dark{
+  background-color: #18191a;
+  color: #e4e6eb;
+  border-color: #e4e6eb;
+  }
 </style>

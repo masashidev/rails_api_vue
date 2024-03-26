@@ -1,6 +1,16 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed, watchEffect} from "vue";
 import { Icon } from '@iconify/vue';
+
+// darkmode logic
+const isDarkMode = ref(false);
+function toggleDarkMode() {
+  isDarkMode.value = !isDarkMode.value;
+};
+watchEffect(() => {
+  document.body.classList.toggle('dark', isDarkMode.value);
+});
+
 
 const posts = ref([]);
 
@@ -13,11 +23,21 @@ const CATEGORIES_URL = "http://localhost:3000/categories";
 
 const newCategoryName = ref('');
 
-
-
+const alertMessage = ref('');
+const alertColor = ref('');
 
 // categories logic
 const categories = ref([]);
+
+const sortedCategories = computed(() => {
+  return categories.value
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(category => ({
+      ...category,
+      name: category.name[0].toUpperCase() + category.name.slice(1)
+    }));
+});
 
 onMounted(async () => {
   try {
@@ -37,14 +57,28 @@ async function createCategory() {
       body: JSON.stringify({ name: newCategoryName.value }),
     });
     const data = await response.json();
-    categories.value.push(data); // Add the new category to the categories list
-    newCategoryName.value = ''; // Reset the input field
+
+    if (response.ok) {
+      categories.value.push(data.category);
+      newCategoryName.value = '';
+      displayMessage(data.message, true);
+    } else {
+      displayMessage(data.message, false);
+    }
   } catch (error) {
     console.error('Failed to create category:', error);
+    displayMessage('An unexpected error occurred', false);
   }
 }
 
+function displayMessage(message, isSuccess) {
+  alertColor.value = isSuccess ? 'green' : 'red';
+  alertMessage.value = message;
+  setTimeout(() => {
+    alertMessage.value = '';
+  }, 3000);
 
+};
 
 
 // posts logic
@@ -141,6 +175,13 @@ function cancelEdit() {
   <div
     class="m-4 rounded-md border-2 border-gray-300 p-4 sm:container sm:mx-auto"
   >
+    <!-- darkmode button -->
+    <button @click="toggleDarkMode">
+      <!-- use different icons for light and dark mode -->
+      <Icon v-if = "!isDarkMode" icon="material-symbols-light:dark-mode-outline" width="32" />
+      <Icon v-else = "isDarkMode" icon="material-symbols-light:light-mode-outline" width="32" color="yellow"/>
+    </button>
+    {{ isDarkMode }}
 
     <!-- title -->
     <div class="flex justify-center items-center space-x-2">
@@ -149,10 +190,21 @@ function cancelEdit() {
       <Icon icon="ic:baseline-house" color="blue"/>
     </div>
 
+    <!-- categories input -->
     <div>
-      <input type="text" v-model="newCategoryName" placeholder="New Category Name" />
-      <button @click="createCategory">Add Category</button>
+      <input class="m-4 h-10  rounded-md border-2 border-gray-300 p-2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
+      type="text" v-model="newCategoryName" placeholder="New Category Name" />
+      <button class=" border-gray-300 p-2 rounded-md bg-slate-700 text-white"
+      @click="createCategory">Add Category</button>
+
+       <!-- alert message -->
+      <span class="m-4 text-nowrap"
+        :style="{ color: alertColor }">
+        {{ alertMessage }}
+      </span>
+
     </div>
+
 
 
 
@@ -161,12 +213,12 @@ function cancelEdit() {
     <div class="flex flex-col sm:flex-row space-y-4">
       <!-- options for selecting categories -->
       <select
-        class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2"
+        class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
         v-model="selectedCategory"
       >
         <option value="" disabled selected>Select a category</option>
         <option
-          v-for="cat in categories"
+          v-for="cat in sortedCategories"
           :key="cat.id"
           :value="cat.id"
           >{{ cat.name }}
@@ -175,7 +227,7 @@ function cancelEdit() {
       {{ selectedCategory }}
       <input
         type="text"
-        class="mx-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2"
+        class="mx-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
         placeholder="Body"
         v-model="body"
       />
@@ -183,7 +235,7 @@ function cancelEdit() {
 
 
 
-    <!-- buttons -->
+    <!-- post operation buttons -->
     <div class="justify-center flex">
       <button
         v-if="isEditing"
@@ -203,7 +255,7 @@ function cancelEdit() {
       <button
         v-else
         @click="createPost"
-        class="m-4 h-10 w-1/3 rounded-md bg-blue-500 text-white"
+        class="m-4 h-10 w-1/3 rounded-md bg-slate-700 text-white"
       >
         Create
       </button>
@@ -214,13 +266,13 @@ function cancelEdit() {
     <!-- posts -->
     <div class="grid grid-cols-1 gap-1  sm:grid-cols-2 xl:grid-cols-3 ">
       <div
-        v-for="post in posts"
+        v-for="(post, index) in posts"
         :key="post.id"
         class="rounded-md border-2 border-gray-300 p-2 flex"
       >
         <div class="flex-1">
           <p class="text-xs"
-          >{{ post.id }}) {{ post.category.name }}</p>
+          >{{ index + 1 }}) {{ post.category?.name }}</p>
           <h3 class="text-lg"
           >{{ post.body }}</h3>
           <p>{{ post.created_at.toString().slice(0, 10) }}</p>
@@ -242,9 +294,6 @@ function cancelEdit() {
         </div>
       </div>
     </div>
-
-
-
   </div>
 </template>
 
