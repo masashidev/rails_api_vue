@@ -50,6 +50,12 @@ onMounted(async () => {
 });
 
 async function createCategory() {
+
+  if (!newCategoryName.value) {
+    displayMessage('Category name is required', false);
+    return;
+  }
+
   try {
     const response = await fetch(CATEGORIES_URL, {
       method: 'POST',
@@ -93,6 +99,11 @@ onMounted(async () => {
 });
 
 async function createPost() {
+  if (!selectedCategory.value || !body.value) {
+    alert('Please select a category and enter a body');
+    return;
+  }
+  
   const res = await fetch(API_URL, {
     method: "POST",
     headers: {
@@ -162,6 +173,23 @@ function cancelEdit() {
   isEditing.value = false;
 }
 
+
+// search logic
+const searchQuery = ref('');
+const filteredPosts = computed(() => {
+  if (!searchQuery.value) return posts.value;
+
+  const lowerSearchQuery = searchQuery.value.toLowerCase();
+  return posts.value.filter(post => {
+    return post.body.toLowerCase().includes(lowerSearchQuery);
+  });
+});
+
+// number of posts
+const numPosts = computed(() => posts.value.length);
+// number of categories
+const numCategories = computed(() => categories.value.length);
+
 </script>
 
 
@@ -205,68 +233,101 @@ function cancelEdit() {
 
     </div>
 
-
-
-
-
-    <!-- input bar -->
-    <div class="flex flex-col sm:flex-row space-y-4">
-      <!-- options for selecting categories -->
-      <select
-        class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
-        v-model="selectedCategory"
+    <!-- categories list -->
+    <div class="flex flex-wrap justify-center">
+      <span
+        v-for="cat in sortedCategories"
+        :key="cat.id"
+        class="m-2 p-2 rounded-md border-2 border-gray-300"
       >
-        <option value="" disabled selected>Select a category</option>
-        <option
-          v-for="cat in sortedCategories"
-          :key="cat.id"
-          :value="cat.id"
-          >{{ cat.name }}
-        </option>
-      </select>
-      {{ selectedCategory }}
-      <input
-        type="text"
-        class="mx-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
-        placeholder="Body"
-        v-model="body"
-      />
+        {{ cat.name }}
+      </span>
     </div>
 
 
+    <!-- creating post div -->
+    <div class="border-2 border-gray-300 p-4 rounded-lg">
+      <h3 class="text-lg font-bold">Create Post</h3>
 
-    <!-- post operation buttons -->
-    <div class="justify-center flex">
-      <button
-        v-if="isEditing"
-        @click="updatePost"
-        class="m-4 h-10 w-1/3 rounded-md bg-blue-500 text-white"
-      >
-        Update
-      </button>
-      <button
-        v-if="isEditing"
-        @click="cancelEdit"
-        class="m-4 h-10 w-1/3 rounded-md bg-blue-500 text-white"
-      >
-        Cancel
-      </button>
+      <!-- input bar -->
+      <div class="flex flex-col sm:flex-row space-y-4">
+        <!-- options for selecting categories -->
+        <select
+          class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
+          v-model="selectedCategory"
+        >
+          <option value="" disabled selected>Select a category</option>
+          <option
+            v-for="cat in sortedCategories"
+            :key="cat.id"
+            :value="cat.id"
+            >{{ cat.name }}
+          </option>
+        </select>
+        {{ selectedCategory }}
+        <input
+          type="text"
+          class="mx-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
+          placeholder="Body"
+          v-model="body"
+        />
+      </div>
 
-      <button
-        v-else
-        @click="createPost"
-        class="m-4 h-10 w-1/3 rounded-md bg-slate-700 text-white"
-      >
-        Create
-      </button>
+
+
+      <!-- post operation buttons -->
+      <div class="justify-center flex">
+        <button
+          v-if="isEditing"
+          @click="updatePost"
+          class="m-4 h-10 w-1/3 rounded-md bg-blue-500 text-white"
+        >
+          Update
+        </button>
+        <button
+          v-if="isEditing"
+          @click="cancelEdit"
+          class="m-4 h-10 w-1/3 rounded-md bg-blue-500 text-white"
+        >
+          Cancel
+        </button>
+
+        <button
+          v-else
+          @click="createPost"
+          class="m-4 h-10 w-1/3 rounded-md bg-slate-700 text-white"
+        >
+          Create
+        </button>
+      </div>
+
+    </div>
+    <div class="flex justify-center">
+      <!-- number of posts -->
+      <p class="m-4">Number of Posts: {{ numPosts }}</p>
+      <!-- number of categories -->
+      <p class="m-4">Number of Categories: {{ numCategories }}</p>
     </div>
 
+    <!-- posts search input -->
+    <input
+      class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
+      type="text"
+      placeholder="Search Posts"
+      v-model="searchQuery"
+    />
+    <!-- category search input -->
+    <input
+      class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
+      type="text"
+      placeholder="Search Categories"
+    />
 
 
     <!-- posts -->
     <div class="grid grid-cols-1 gap-1  sm:grid-cols-2 xl:grid-cols-3 ">
       <div
-        v-for="(post, index) in posts"
+        v-for="(post, index) in filteredPosts"
         :key="post.id"
         class="rounded-md border-2 border-gray-300 p-2 flex"
       >
