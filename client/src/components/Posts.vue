@@ -3,7 +3,7 @@ import { ref, onMounted, computed, watchEffect} from "vue";
 import { Icon } from '@iconify/vue';
 
 // darkmode logic
-const isDarkMode = ref(false);
+const isDarkMode = ref(true);
 function toggleDarkMode() {
   isDarkMode.value = !isDarkMode.value;
 };
@@ -103,7 +103,7 @@ async function createPost() {
     alert('Please select a category and enter a body');
     return;
   }
-  
+
   const res = await fetch(API_URL, {
     method: "POST",
     headers: {
@@ -117,7 +117,7 @@ async function createPost() {
 
   const data = await res.json();
   posts.value.push(data);
-  selectedCategory.value = "";
+  // selectedCategory.value = "";
   body.value = "";
   post_id.value = "";
 }
@@ -176,11 +176,20 @@ function cancelEdit() {
 
 // search logic
 const searchQuery = ref('');
+const sortNewestFirst = ref(true);
 const filteredPosts = computed(() => {
-  if (!searchQuery.value) return posts.value;
+  const sortedPosts = posts.value.sort((a, b) => {
+    return sortNewestFirst.value
+      ? b.created_at.localeCompare(a.created_at)
+      : a.created_at.localeCompare(b.created_at);
+  });
+
+  if (!searchQuery.value) {
+    return sortedPosts;
+  }
 
   const lowerSearchQuery = searchQuery.value.toLowerCase();
-  return posts.value.filter(post => {
+  return sortedPosts.filter(post => {
     return post.body.toLowerCase().includes(lowerSearchQuery);
   });
 });
@@ -209,20 +218,18 @@ const numCategories = computed(() => categories.value.length);
       <Icon v-if = "!isDarkMode" icon="material-symbols-light:dark-mode-outline" width="32" />
       <Icon v-else = "isDarkMode" icon="material-symbols-light:light-mode-outline" width="32" color="yellow"/>
     </button>
-    {{ isDarkMode }}
 
     <!-- title -->
     <div class="flex justify-center items-center space-x-2">
       <h1 class="text-center text-2xl font-bold">Posts</h1>
-      <Icon icon="mdi-light:home" width="32" height="32" />
-      <Icon icon="ic:baseline-house" color="blue"/>
+      <Icon icon="material-symbols-light:post-add-rounded" width="32" height="32" />
     </div>
 
     <!-- categories input -->
     <div>
       <input class="m-4 h-10  rounded-md border-2 border-gray-300 p-2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
       type="text" v-model="newCategoryName" placeholder="New Category Name" />
-      <button class=" border-gray-300 p-2 rounded-md bg-slate-700 text-white"
+      <button class=" border-gray-300 p-2 rounded-md bg-slate-700 text-white dark:bg-cyan-600"
       @click="createCategory">Add Category</button>
 
        <!-- alert message -->
@@ -295,7 +302,7 @@ const numCategories = computed(() => categories.value.length);
         <button
           v-else
           @click="createPost"
-          class="m-4 h-10 w-1/3 rounded-md bg-slate-700 text-white"
+          class="m-4 h-10 w-1/3 rounded-md bg-slate-700 text-white dark:bg-cyan-600"
         >
           Create
         </button>
@@ -323,6 +330,15 @@ const numCategories = computed(() => categories.value.length);
       placeholder="Search Categories"
     />
 
+    <!-- sort posts -->
+    <div class="flex justify-center">
+      <button
+        class="m-4 h-10 w-1/3 rounded-md bg-slate-700 text-white dark:bg-cyan-600"
+        @click="sortNewestFirst = !sortNewestFirst"
+      >
+        {{ sortNewestFirst ? "Sort Oldest First" : "Sort Newest First" }}
+      </button>
+    </div>
 
     <!-- posts -->
     <div class="grid grid-cols-1 gap-1  sm:grid-cols-2 xl:grid-cols-3 ">
