@@ -1,10 +1,10 @@
 <script setup>
-import Posts from './components/Posts.vue';
+import PostsManager from './components/PostsManager.vue';
 </script>
 
 <template>
   <div>
-    <Posts />
+    <PostsManager />
   </div>
 </template>
 

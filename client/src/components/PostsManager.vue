@@ -2,15 +2,11 @@
 import { ref, onMounted, computed, watchEffect} from "vue";
 import { Icon } from '@iconify/vue';
 
-// darkmode logic
-const isDarkMode = ref(true);
-function toggleDarkMode() {
-  isDarkMode.value = !isDarkMode.value;
-};
-watchEffect(() => {
-  document.body.classList.toggle('dark', isDarkMode.value);
-});
+import DarkModeToggle from './DarkModeToggle.vue';
+import CategoryInput from './CategoryInput.vue';
 
+// global variables
+const CATEGORIES_URL = "http://localhost:3000/categories";
 
 const posts = ref([]);
 
@@ -19,12 +15,7 @@ const body = ref("");
 const post_id = ref("");
 const isEditing = ref(false);
 const API_URL = "http://localhost:3000/posts";
-const CATEGORIES_URL = "http://localhost:3000/categories";
 
-const newCategoryName = ref('');
-
-const alertMessage = ref('');
-const alertColor = ref('');
 
 // categories logic
 const categories = ref([]);
@@ -49,42 +40,9 @@ onMounted(async () => {
   }
 });
 
-async function createCategory() {
-
-  if (!newCategoryName.value) {
-    displayMessage('Category name is required', false);
-    return;
-  }
-
-  try {
-    const response = await fetch(CATEGORIES_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newCategoryName.value }),
-    });
-    const data = await response.json();
-
-    if (response.ok) {
-      categories.value.push(data.category);
-      newCategoryName.value = '';
-      displayMessage(data.message, true);
-    } else {
-      displayMessage(data.message, false);
-    }
-  } catch (error) {
-    console.error('Failed to create category:', error);
-    displayMessage('An unexpected error occurred', false);
-  }
+function handleCategoryCreated(category) {
+  categories.value.push(category);
 }
-
-function displayMessage(message, isSuccess) {
-  alertColor.value = isSuccess ? 'green' : 'red';
-  alertMessage.value = message;
-  setTimeout(() => {
-    alertMessage.value = '';
-  }, 3000);
-
-};
 
 
 // posts logic
@@ -212,12 +170,7 @@ const numCategories = computed(() => categories.value.length);
   <div
     class="m-4 rounded-md border-2 border-gray-300 p-4 sm:container sm:mx-auto"
   >
-    <!-- darkmode button -->
-    <button @click="toggleDarkMode">
-      <!-- use different icons for light and dark mode -->
-      <Icon v-if = "!isDarkMode" icon="material-symbols-light:dark-mode-outline" width="32" />
-      <Icon v-else = "isDarkMode" icon="material-symbols-light:light-mode-outline" width="32" color="yellow"/>
-    </button>
+    <DarkModeToggle />
 
     <!-- title -->
     <div class="flex justify-center items-center space-x-2">
@@ -226,19 +179,7 @@ const numCategories = computed(() => categories.value.length);
     </div>
 
     <!-- categories input -->
-    <div>
-      <input class="m-4 h-10  rounded-md border-2 border-gray-300 p-2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
-      type="text" v-model="newCategoryName" placeholder="New Category Name" />
-      <button class=" border-gray-300 p-2 rounded-md bg-slate-700 text-white dark:bg-cyan-600"
-      @click="createCategory">Add Category</button>
-
-       <!-- alert message -->
-      <span class="m-4 text-nowrap"
-        :style="{ color: alertColor }">
-        {{ alertMessage }}
-      </span>
-
-    </div>
+    <CategoryInput :categoriesUrl="CATEGORIES_URL" @category-created="handleCategoryCreated" />
 
     <!-- categories list -->
     <div class="flex flex-wrap justify-center">
