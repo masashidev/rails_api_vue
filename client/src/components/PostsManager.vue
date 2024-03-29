@@ -2,8 +2,12 @@
 import { ref, onMounted, computed, watchEffect} from "vue";
 import { Icon } from '@iconify/vue';
 
+import Title from './Title.vue';
 import DarkModeToggle from './DarkModeToggle.vue';
 import CategoryInput from './CategoryInput.vue';
+import CategoryList from './CategoryList.vue';
+import PostsIndex from './PostsIndex.vue';
+import PostsSortButton from './PostsSortButton.vue';
 
 // global variables
 const CATEGORIES_URL = "http://localhost:3000/categories";
@@ -34,7 +38,6 @@ onMounted(async () => {
   try {
     const res = await fetch(CATEGORIES_URL);
     categories.value = await res.json();
-    console.log('Fetched categories:', categories.value)
   } catch (error) {
     console.error('Failed to fetch categories:', error)
   }
@@ -43,6 +46,8 @@ onMounted(async () => {
 function handleCategoryCreated(category) {
   categories.value.push(category);
 }
+
+
 
 
 // posts logic
@@ -156,7 +161,6 @@ const filteredPosts = computed(() => {
 const numPosts = computed(() => posts.value.length);
 // number of categories
 const numCategories = computed(() => categories.value.length);
-
 </script>
 
 
@@ -171,25 +175,15 @@ const numCategories = computed(() => categories.value.length);
     class="m-4 rounded-md border-2 border-gray-300 p-4 sm:container sm:mx-auto"
   >
     <DarkModeToggle />
-
     <!-- title -->
-    <div class="flex justify-center items-center space-x-2">
-      <h1 class="text-center text-2xl font-bold">Posts</h1>
-      <Icon icon="material-symbols-light:post-add-rounded" width="32" height="32" />
-    </div>
+    <Title title="Posts Manager" />
 
-    <!-- categories input -->
-    <CategoryInput :categoriesUrl="CATEGORIES_URL" @category-created="handleCategoryCreated" />
-
-    <!-- categories list -->
-    <div class="flex flex-wrap justify-center">
-      <span
-        v-for="cat in sortedCategories"
-        :key="cat.id"
-        class="m-2 p-2 rounded-md border-2 border-gray-300"
-      >
-        {{ cat.name }}
-      </span>
+    <div class="border-2 border-gray-300 p-4 rounded-lg my-4">
+      <h3 class="text-lg font-bold">Create Categories</h3>
+      <!-- categories input -->
+      <CategoryInput :categoriesUrl="CATEGORIES_URL" @category-created="handleCategoryCreated" />
+      <!-- categories list -->
+      <CategoryList :sortedCategories="sortedCategories" />
     </div>
 
 
@@ -197,7 +191,7 @@ const numCategories = computed(() => categories.value.length);
     <div class="border-2 border-gray-300 p-4 rounded-lg">
       <h3 class="text-lg font-bold">Create Post</h3>
 
-      <!-- input bar -->
+      <!-- post input bar -->
       <div class="flex flex-col sm:flex-row space-y-4">
         <!-- options for selecting categories -->
         <select
@@ -212,7 +206,7 @@ const numCategories = computed(() => categories.value.length);
             >{{ cat.name }}
           </option>
         </select>
-        {{ selectedCategory }}
+
         <input
           type="text"
           class="mx-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 sm:w-1/2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
@@ -220,7 +214,6 @@ const numCategories = computed(() => categories.value.length);
           v-model="body"
         />
       </div>
-
 
 
       <!-- post operation buttons -->
@@ -250,12 +243,9 @@ const numCategories = computed(() => categories.value.length);
       </div>
 
     </div>
-    <div class="flex justify-center">
-      <!-- number of posts -->
-      <p class="m-4">Number of Posts: {{ numPosts }}</p>
-      <!-- number of categories -->
-      <p class="m-4">Number of Categories: {{ numCategories }}</p>
-    </div>
+
+    <!-- index for posts -->
+    <PostsIndex :numPosts="numPosts" :numCategories="numCategories" />
 
     <!-- posts search input -->
     <input
@@ -271,15 +261,11 @@ const numCategories = computed(() => categories.value.length);
       placeholder="Search Categories"
     />
 
-    <!-- sort posts -->
-    <div class="flex justify-center">
-      <button
-        class="m-4 h-10 w-1/3 rounded-md bg-slate-700 text-white dark:bg-cyan-600"
-        @click="sortNewestFirst = !sortNewestFirst"
-      >
-        {{ sortNewestFirst ? "Sort Oldest First" : "Sort Newest First" }}
-      </button>
-    </div>
+    <!-- sort posts button -->
+    <PostsSortButton
+      :sortNewestFirst="sortNewestFirst"
+      @update:sortNewestFirst="sortNewestFirst = $event"
+    />
 
     <!-- posts -->
     <div class="grid grid-cols-1 gap-1  sm:grid-cols-2 xl:grid-cols-3 ">
