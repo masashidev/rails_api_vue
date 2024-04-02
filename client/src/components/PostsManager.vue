@@ -3,26 +3,32 @@ import { ref, onMounted, computed, watchEffect} from "vue";
 import { Icon } from '@iconify/vue';
 
 import Title from './Title.vue';
+import PasswordInput from './PasswordInput.vue';
 import DarkModeToggle from './DarkModeToggle.vue';
 import CategoryInput from './CategoryInput.vue';
 import CategoryList from './CategoryList.vue';
 import PostsIndex from './PostsIndex.vue';
 import PostsSortButton from './PostsSortButton.vue';
+import PostsList from './PostList.vue';
+
 
 // global variables
+const API_URL = "http://localhost:3000/posts";
 const CATEGORIES_URL = "http://localhost:3000/categories";
 
+
 const posts = ref([]);
+const categories = ref([]);
 
-const selectedCategory = ref("");
-const body = ref("");
 const post_id = ref("");
-const isEditing = ref(false);
-const API_URL = "http://localhost:3000/posts";
+const body = ref("");
+const selectedCategory = ref("");
 
+const isEditing = ref(false);
+
+const password = ref("");
 
 // categories logic
-const categories = ref([]);
 
 const sortedCategories = computed(() => {
   return categories.value
@@ -161,6 +167,10 @@ const filteredPosts = computed(() => {
 const numPosts = computed(() => posts.value.length);
 // number of categories
 const numCategories = computed(() => categories.value.length);
+
+function handleSubmit (submittedPassword) {
+  console.log('Password:', submittedPassword);
+}
 </script>
 
 
@@ -178,6 +188,12 @@ const numCategories = computed(() => categories.value.length);
     <!-- title -->
     <Title title="Posts Manager" />
 
+    <PasswordInput v-model="password" @submit-success="handleSubmit" />
+    <p> password:{{ password }} </p>
+
+    <!-- <StatusUpdate v-model="status" /> -->
+
+    <!-- categories div -->
     <div class="border-2 border-gray-300 p-4 rounded-lg my-4">
       <h3 class="text-lg font-bold">Create Categories</h3>
       <!-- categories input -->
@@ -185,6 +201,7 @@ const numCategories = computed(() => categories.value.length);
       <!-- categories list -->
       <CategoryList :sortedCategories="sortedCategories" />
     </div>
+
 
 
     <!-- creating post div -->
@@ -267,37 +284,12 @@ const numCategories = computed(() => categories.value.length);
       @update:sortNewestFirst="sortNewestFirst = $event"
     />
 
-    <!-- posts -->
-    <div class="grid grid-cols-1 gap-1  sm:grid-cols-2 xl:grid-cols-3 ">
-      <div
-        v-for="(post, index) in filteredPosts"
-        :key="post.id"
-        class="rounded-md border-2 border-gray-300 p-2 flex"
-      >
-        <div class="flex-1">
-          <p class="text-xs"
-          >{{ index + 1 }}) {{ post.category?.name }}</p>
-          <h3 class="text-lg"
-          >{{ post.body }}</h3>
-          <p>{{ post.created_at.toString().slice(0, 10) }}</p>
-        </div>
-
-        <div class="flex justify-end">
-          <button
-            class="m-2 p-1  rounded-md bg-blue-500 text-white"
-            @click="editPost(post.id)"
-          >
-            <icon icon="mdi-light:pencil" />
-          </button>
-          <button
-            class="m-2 p-1 rounded-md bg-red-500 text-white"
-            @click="deletePost(post.id)"
-          >
-            <icon icon="ic:baseline-delete-forever" />
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- posts index-->
+    <PostsList
+      :filteredPosts="filteredPosts"
+      :editPost="editPost"
+      :deletePost="deletePost"
+    />
   </div>
 </template>
 
