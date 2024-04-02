@@ -2,14 +2,15 @@
 import { ref, onMounted, computed, watchEffect} from "vue";
 import { Icon } from '@iconify/vue';
 
-import Title from './Title.vue';
-import PasswordInput from './PasswordInput.vue';
-import DarkModeToggle from './DarkModeToggle.vue';
-import CategoryInput from './CategoryInput.vue';
-import CategoryList from './CategoryList.vue';
-import PostsIndex from './PostsIndex.vue';
-import PostsSortButton from './PostsSortButton.vue';
-import PostsList from './PostList.vue';
+import Title from '../components/posts/Title.vue';
+import PasswordInput from '../components/posts/PasswordInput.vue';
+import DarkModeToggle from '../components/posts/DarkModeToggle.vue';
+import CategoryInput from '../components/posts/CategoryInput.vue';
+import CategoryList from '../components/posts/CategoryList.vue';
+import PostsIndex from '../components/posts/PostsIndex.vue';
+import PostsSortButton from '../components/posts/PostsSortButton.vue';
+import PostsSearchInput from '../components/posts/PostsSearchInput.vue';
+import PostsList from '../components/posts/PostList.vue';
 
 
 // global variables
@@ -180,6 +181,9 @@ function handleSubmit (submittedPassword) {
 
 
 
+
+
+
 <template>
   <div
     class="m-4 rounded-md border-2 border-gray-300 p-4 sm:container sm:mx-auto"
@@ -265,12 +269,9 @@ function handleSubmit (submittedPassword) {
     <PostsIndex :numPosts="numPosts" :numCategories="numCategories" />
 
     <!-- posts search input -->
-    <input
-      class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"
-      type="text"
-      placeholder="Search Posts"
-      v-model="searchQuery"
-    />
+    <PostsSearchInput v-model="searchQuery" />
+    <p>searchquery:{{ searchQuery }}</p>
+
     <!-- category search input -->
     <input
       class="m-4 h-10 w-11/12 rounded-md border-2 border-gray-300 p-2 dark:bg-slate-400 dark:text-gray-100 dark:placeholder-slate-300"

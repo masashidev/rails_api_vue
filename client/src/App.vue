@@ -1,10 +1,11 @@
 <script setup>
-import PostsManager from './components/PostsManager.vue';
+  import Menu from './components/shared/Menu.vue';
 </script>
 
 <template>
   <div>
-    <PostsManager />
+    <Menu />
+    <router-view />
   </div>
 </template>
 
