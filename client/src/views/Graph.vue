@@ -85,7 +85,8 @@ async function deleteNode(nodeId) {
       >{{ message }}
     </p>
 
-    <NodesForm @update:create-node="createNode" />
+    <NodesForm
+      @update:create-node="createNode" />
     <DeleteButton
       :deleteMode="deleteMode"
       @update:delete-mode="deleteMode = $event"

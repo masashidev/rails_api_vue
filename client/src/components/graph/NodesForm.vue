@@ -1,18 +1,26 @@
 <script setup>
-  import { defineEmits, ref
+  import { defineEmits, ref,
    } from 'vue';
+
 
   const emit = defineEmits(
     ['update:create-node']
   );
   const nodeName = ref('');
 
+  function handleSubmit (){
+    emit('update:create-node', {name: nodeName.value});
+    nodeName.value = '';
+
+  }
+
+
 </script>
 
 <template>
   <div class="flex justify-center border-2 border-gray-300 rounded-md p-2">
     <form
-      @submit.prevent="emit('update:create-node', {name: nodeName})"
+      @submit.prevent="handleSubmit"
       class="space-x-6"
     >
       <label for="name">Node Name:</label>

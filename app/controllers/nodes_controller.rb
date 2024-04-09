@@ -25,6 +25,7 @@ class NodesController < ApplicationController
 
   def destroy
     @node.destroy!
+    render json: { message: 'Node deleted successfully' }, status: :ok
   end
 
   private
