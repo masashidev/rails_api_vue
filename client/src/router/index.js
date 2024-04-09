@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Home2 from '../views/Home2.vue'
 import PostsManager from "../views/PostsManager.vue";
+import Graph from "../views/Graph.vue";
+import Test from "../views/Test.vue";
 
 const routes = [
   {
@@ -19,6 +21,16 @@ const routes = [
     path: '/posts',
     name: 'PostsManager',
     component: PostsManager
+  },
+  {
+    path: '/graph',
+    name: 'Graph',
+    component: Graph
+  },
+  {
+    path: '/test',
+    name: 'Test',
+    component: Test
   }
 ]
 

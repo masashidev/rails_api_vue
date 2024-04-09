@@ -10,11 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_03_22_003612) do
+ActiveRecord::Schema[7.1].define(version: 2024_04_07_024616) do
   create_table "categories", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "nodes", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "is_favorite", default: false, null: false
+    t.index ["name"], name: "index_nodes_on_name", unique: true
   end
 
   create_table "posts", force: :cascade do |t|
