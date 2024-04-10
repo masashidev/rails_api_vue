@@ -4,6 +4,13 @@ import DeleteButton from "../components/graph/DeleteButton.vue";
 import NodesList from "../components/graph/NodesList.vue";
 import NodesForm from "../components/graph/NodesForm.vue";
 
+// level of generalization of API call
+// number of model representing relations about nodes
+// visual recognition of the data
+// area of table loaded with initial load
+// resolution of information about relations among nodes
+// number of index of the data
+//
 
 const NODE_API_URL = "http://localhost:3000/nodes";
 
@@ -94,7 +101,10 @@ async function deleteNode(nodeId) {
     {{ deleteMode }}
     <input type="checkbox" v-model="deleteMode" />
 
-    <NodesList :nodes="nodes" :deleteMode="deleteMode" @delete:node="deleteNode" />
+    <NodesList
+    :NODE_API_URL="NODE_API_URL"
+    :nodes="nodes"
+    :deleteMode="deleteMode" @delete:node="deleteNode" />
 
   </div>
 </template>

@@ -21,6 +21,11 @@ class NodesController < ApplicationController
   end
 
   def update
+    if @node.update(node_params)
+      render json: @node
+    else
+      render json: @node.errors, status: :unprocessable_entity
+    end
   end
 
   def destroy
@@ -35,6 +40,6 @@ class NodesController < ApplicationController
   end
 
   def node_params
-    params.require(:node).permit(:name)
+    params.require(:node).permit(:name, :is_favorite)
   end
 end
