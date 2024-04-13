@@ -42,7 +42,6 @@ async function toggleFavorite(node){
 
 <template>
   <div>
-    {{ nodes }}
     <h1>Graph</h1>
     {{ deleteMode }}
     <div>

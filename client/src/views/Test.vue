@@ -1,56 +1,89 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import ToggleButton from "../components/test/ToggleButton.vue";
 
-const state = ref(false);
-const size = ref(10);
-const minimumSize = ref(10);
-const maximumSize = ref(400);
-const frameNumber = ref(0);
-const stateWords = ref(["bigger", "smaller"]);
+import { ref, onMounted, watch, computed } from 'vue';
+import List from '../components/test/List.vue';
 
+const sortingOptions = ref([
+  { name: "Alphbet", value: "alphabet" },
+  { name: "Id", value: "id" },
+  { name: "Date", value: "date" },
+  { name: "Category", value : "category"}
+
+])
+
+const selectedSorts = ref([]);
+
+const count = ref(0);
+const data = ref(null);
+const width = ref(0);
 onMounted(() => {
-  // update();
+
+});
+function toggleData(){
+  if(data.value === null){
+    data.value = "data";
+  }else{
+    data.value = null;
+  }
+}
+watch(data, (newVal, oldVal) => {
+  console.log(newVal, oldVal);
 });
 
-function update() {
-  if (state.value === true && size.value < maximumSize.value) {
-    incrementSize();
-  } else if (state.value === false && size.value > minimumSize.value) {
-    decrementSize();
-  }
-  frameNumber.value += 1;
-  console.log(frameNumber.value);
-  requestAnimationFrame(update);
+const div = ref(null);
+function updateWidth(){
+  width.value += 10;
 }
+const humans = ref([
+  { name: "John", age: 30 },
+  { name: "Jane", age: 25 },
+  { name: "Jake", age: 15 },
+  { name: "Jill", age: 20 },
+  { name: "Jack", age: 10 },
+]);
 
-function incrementSize() {
-  console.log(size.value);
-  size.value += 1;
-}
-function decrementSize() {
-  console.log(size.value);
-  size.value -= 1;
-}
+const ageSortedHumans = computed(() => {
+  return humans.value.slice().sort((a, b) => a.age - b.age);
+});
+
+
 </script>
 
 <template>
-  <div>
-    <ToggleButton :state="state" @update:state="state = $event" />
+  <List />
+  <h1>humans names</h1>
+  <ul>
+    <li v-for="human in ageSortedHumans" :key="human.name">
+      {{ human.name }} - {{ human.age }}
+    </li>
+  </ul>
 
-    <div class="border-2 border-gray-300 p-2 rounded-md inline-block fixed top-1/2 left-10">
-      size:{{ size }}
-    </div>
-    <div>
-      <h1
-        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform"
-        :style="{ fontSize: `${size}px` }"
-        @click="state = !state"
-      >
-        <span>{{ stateWords[state ? 0 : 1] }}</span>
-      </h1>
-    </div>
+  <p>count:{{ count }}</p>
+  <div
+    :style="{ width: `${width}px` }"
+    ref="div"
+    class="h-4 bg-red-500">a</div>
+  <button @click="toggleData">Add Content</button>
+  <button @click="updateWidth">Update Width</button>
+
+  <div class="flex w-11/12 justify-center">
+    <h2 class="text-2xl font-semibold m-4 inline-block whitespace-nowrap">Sort By</h2>
+    <div class="h-1 w-full m-auto bg-gray-300"></div>
   </div>
+  <div class="flex justify-center space-x-4 border-s-4 border-b-4 m-4">
+    <button
+      class="m-2 h-10 p-2 rounded-md bg-slate-700 text-white dark:bg-cyan-600"
+      v-for="option in sortingOptions"
+      :key="option.value"
+      @click="selectedSorts.push(option.value)">
+      {{ option.name }}
+    </button>
+  </div>
+
+
+
 </template>
 
-<style scoped></style>
+<style scoped>
+
+</style>

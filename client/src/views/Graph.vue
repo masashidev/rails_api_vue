@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import DeleteButton from "../components/graph/DeleteButton.vue";
+import SortButton from "../components/graph/SortButton.vue";
 import NodesList from "../components/graph/NodesList.vue";
+import SelectedNode from "../components/graph/SelectedNode.vue";
 import NodesForm from "../components/graph/NodesForm.vue";
 
 // level of generalization of API call
@@ -13,6 +15,7 @@ import NodesForm from "../components/graph/NodesForm.vue";
 //
 
 const NODE_API_URL = "http://localhost:3000/nodes";
+const CATEGORIES_URL = "http://localhost:3000/categories";
 
 const nodes = ref([]);
 const message = ref("");
@@ -88,18 +91,25 @@ async function deleteNode(nodeId) {
   <div class="m-4 p-4 space-y-4">
 
 
+
+
+    <NodesForm
+      @update:create-node="createNode" />
+
     <p v-if="message" :class="{ 'text-green-500': responseOkay, 'text-red-500': !responseOkay }"
       >{{ message }}
     </p>
 
-    <NodesForm
-      @update:create-node="createNode" />
     <DeleteButton
       :deleteMode="deleteMode"
       @update:delete-mode="deleteMode = $event"
     />
     {{ deleteMode }}
     <input type="checkbox" v-model="deleteMode" />
+
+    <SortButton />
+
+    <SelectedNode />
 
     <NodesList
     :NODE_API_URL="NODE_API_URL"
